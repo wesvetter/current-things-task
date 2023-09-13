@@ -2,6 +2,8 @@
 
 An [xbar][gh-xbar] plugin that shows the current work task in Things 3.
 
+![Screenshot of the plugin](preview.png)
+
 The task must be scheduled for Today and be under an area called "Work" (either directly or in a project in the Work area).
 
 ## Requirements
