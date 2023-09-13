@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# By default use the system Python 3 installation.
+
+# If Homebrew is installed, you can use the Homebrew Python 3 installation by
+# replacing the default shebang line above with the following line (check
+# `which python` and adjust the path as needed).
+#!/usr/bin/env /opt/homebrew/opt/python@3.11/libexec/bin/python
 
 #  <xbar.title>Current Things Task</xbar.title>
 #  <xbar.version>v0.1</xbar.version>
