@@ -5,15 +5,12 @@
 #  <xbar.author>Wes Vetter</xbar.author>
 #  <xbar.author.github>wesvetter</xbar.author.github>
 #  <xbar.desc>Shows the current task in Things</xbar.desc>
-#  <xbar.image>http://www.hosted-somewhere/pluginimage</xbar.image>
 #  <xbar.dependencies>python3</xbar.dependencies>
-#  <xbar.abouturl>http://example.com/</xbar.abouturl>
 
-
-# LEAVING OFF: The Python script seems to work but it isn't outputting anything
-# in xbar. I put the plugin in ~/Library/Application Support/plugins and made
-# it executable.
-
+# The Python script may not work on legacy macOS versions (Big Sur or earlier),
+# because it may not find the correct path to the Python executable. If that
+# happens, use the shell script instead and specify the appropriate path to the
+# Python executable (use `which python3` to find the path).
 
 try:
     import things
