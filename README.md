@@ -15,15 +15,26 @@ The task must be scheduled for Today and be under an area called "Work" (either 
 
 ## Installation
 
-1. Clone the repo.
-2. Install the `things` Python package (`pip3 install things.py`)
-3. Link the script to your Xbar plugin directory.
+1.  Clone the repo:
 
-```
-pip3 install things.py
-git clone git@github.com:wesvetter/current-things-task.git
-cd current-things-task
-ln -s $PWD/current-task.60s.py $HOME/Library/Application\ Support/xbar/plugins/current-task.60s.py
-```
+    ```
+    git clone git@github.com:wesvetter/current-things-task.git
+    ```
+
+2.  Install the `things` Python package:
+
+    ```
+    /usr/bin/pip3 install things.py
+    ```
+
+    (View the `.py` file for instructions on using Python via Homebrew)
+
+3.  Link the script to your Xbar plugin directory.
+
+    ```
+    cd current-things-task
+    ln -s $PWD/current-task.60s.py $HOME/Library/Application\ Support/xbar/plugins/current-task.60s.py
+    ```
+
 
 [gh-xbar]: https://github.com/matryer/xbar
