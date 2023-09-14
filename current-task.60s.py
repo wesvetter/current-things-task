@@ -17,6 +17,7 @@
 # because it may not find the correct path to the Python executable. If that
 # happens, use the shell script instead and specify the appropriate path to the
 # Python executable (use `which python3` to find the path).
+MAX_TITLE_LENGTH = 20
 
 try:
     import things
@@ -46,10 +47,17 @@ work_tasks.extend(work_project_todos)
 todays_work_tasks = [t for t in todays_tasks if t in work_tasks]
 
 if todays_work_tasks:
-    # get the first task in the list.
+    # Get the first task in the list.
     next_task = todays_work_tasks[0]
 
-    # print the title of the task.
-    print(next_task['title'])
+    # Get the title of the task, and if it is longer than N characters truncate it.
+    title = ''
+    if len(next_task['title']) > MAX_TITLE_LENGTH:
+        title = next_task['title'][:MAX_TITLE_LENGTH] + '...'
+    else:
+        title = next_task['title']
+
+    # Print the title of the task.
+    print(title)
 else:
     print('☑️')
