@@ -45,8 +45,11 @@ work_tasks.extend(work_project_todos)
 # Find the intersection of today's tasks and the work tasks.
 todays_work_tasks = [t for t in todays_tasks if t in work_tasks]
 
-# get the first task in the list.
-next_task = todays_work_tasks[0]
+if todays_work_tasks:
+    # get the first task in the list.
+    next_task = todays_work_tasks[0]
 
-# print the title of the task.
-print(next_task['title'] or 'nada')
+    # print the title of the task.
+    print(next_task['title'])
+else:
+    print('☑️')
