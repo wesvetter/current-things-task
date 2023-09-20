@@ -19,6 +19,8 @@
 # Python executable (use `which python3` to find the path).
 MAX_TITLE_LENGTH = 20
 
+DEFAULT_AREA_NAME = 'Work'
+
 try:
     import things
 except ImportError:
@@ -26,22 +28,32 @@ except ImportError:
     print("pip install things")
     exit()
 
+def find_all_todos_by_area_title(title):
+    """
+    Finds all of the todos in the specified area, including those in projects.
+    """
+    try:
+        target_area = [a for a in things.areas() if a.get('title') == title][0]
+    except IndexError:
+       raise Exception('Area not found: ' + title)
+
+    # Get all tasks in the target area.
+    area_tasks = things.tasks(area=target_area.get('uuid'))
+
+    # Get all projects in the target area.
+    area_projects = things.projects(area=target_area.get('uuid'))
+
+    # Get all todos of projects in the target area.
+    area_project_todos = [t for p in area_projects for t in things.todos(project=p.get('uuid'))]
+
+    # Add the project todos to the work tasks.
+    area_tasks.extend(area_project_todos)
+
+    return things.tasks(area=target_area.get('uuid'))
+
 todays_tasks = things.today()
 
-# Find the Work area.
-work_area = [a for a in things.areas() if a.get('title') == 'Work'][0]
-
-# Get all tasks in the Work area.
-work_tasks = things.tasks(area=work_area.get('uuid'))
-
-# Get all projects in the Work area.
-work_projects = things.projects(area=work_area.get('uuid'))
-
-# Get all todos of projects in the Work area.
-work_project_todos = [t for p in work_projects for t in things.todos(project=p.get('uuid'))]
-
-# Add the project todos to the work tasks.
-work_tasks.extend(work_project_todos)
+work_tasks = find_all_todos_by_area_title(DEFAULT_AREA_NAME)
 
 # Find the intersection of today's tasks and the work tasks.
 todays_work_tasks = [t for t in todays_tasks if t in work_tasks]
