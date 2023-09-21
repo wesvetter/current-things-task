@@ -4,14 +4,14 @@ An [xbar][gh-xbar] plugin that shows the current work task in Things 3.
 
 ![Screenshot of the plugin](preview.png)
 
-The task must be scheduled for Today and be under an area called "Work" (either directly or in a project in the Work area).
+The task must be scheduled for Today and can be filtered to a specific area (by default "Work", but this is configurable).
 
 ## Requirements
 
 *   [Xbar][gh-xbar]
-*   Things 3 (obviously)
+*   [Things 3][things-www] (obviously)
 *   Python 3
-*   The `things` Python package
+*   The `things.py` Python package
 
 ## Installation
 
@@ -36,5 +36,41 @@ The task must be scheduled for Today and be under an area called "Work" (either 
     ln -s $PWD/current-task.60s.py $HOME/Library/Application\ Support/xbar/plugins/current-task.60s.py
     ```
 
+## Configuration
+
+The Xbar plugin can be customized by creating a `.current-thing.json` file in the repository root or in your home directory.
+
+Example:
+
+```json
+{
+  "target_area_name": "Family",
+  "no_tasks_message": "all done!"
+}
+```
+
+### `target_area_name`
+
+**default:** `Work`
+
+The specified Area in Things to filter by. This is useful because you may not want your _actual_ current task (say, "Call the electrician") visible.
+
+Tasks from projects under this area will also appear.
+
+### `no_tasks_message`
+
+**default:**  ☑️
+
+A message to display when no remaining tasks in the target area are left for today.
+
+### `max_title_length`
+
+**default:** 20
+
+The maximum length of the title before truncation. If the title is longer than this, it will be truncated and `...` will be appended. 
+
+Note that if the title is excessively long, such that it collides with other application's menus, then Xbar will not render plugin at all.
+
 
 [gh-xbar]: https://github.com/matryer/xbar
+[things-www]: https://culturedcode.com/things/

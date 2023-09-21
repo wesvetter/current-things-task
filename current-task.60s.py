@@ -17,16 +17,60 @@
 # because it may not find the correct path to the Python executable. If that
 # happens, use the shell script instead and specify the appropriate path to the
 # Python executable (use `which python3` to find the path).
-MAX_TITLE_LENGTH = 20
+
+import os
+import sys
+import json
 
 DEFAULT_AREA_NAME = 'Work'
+MAX_TITLE_LENGTH = 20
+NO_TASKS_MESSAGE = '☑️'
 
 try:
     import things
 except ImportError:
     # Error: The 'things' package is not installed. Please install it using the following command:
-    print("pip install things")
+    print("pip install things.py")
     exit()
+
+
+def find_user_config():
+    """
+    Looks for a JSON configuration file.
+
+    By default looks in the current directory, then in the user's home directory.
+    """
+    repo_directory = os.path.dirname(os.path.abspath(__file__))
+    default_path = os.path.join(repo_directory, '.current-thing.json')
+    path_to_read = None
+
+    if os.path.exists(default_path):
+        path_to_read = default_path
+
+    if os.path.exists(os.path.expanduser('~/.current-thing.json')):
+        path_to_read = os.path.expanduser('~/.current-thing.json')
+
+    if not path_to_read:
+        return {}
+
+    with open(path_to_read, 'r') as file:
+        return json.load(file)
+
+
+def build_config():
+    """
+    Builds the configuration dictionary.
+    """
+    config = {
+        'max_title_length': MAX_TITLE_LENGTH,
+        'no_tasks_message': NO_TASKS_MESSAGE,
+        'target_area_name': DEFAULT_AREA_NAME
+    }
+
+    config.update(find_user_config())
+
+    return config
+
 
 def find_all_todos_by_area_title(title):
     """
@@ -46,30 +90,40 @@ def find_all_todos_by_area_title(title):
     # Get all todos of projects in the target area.
     area_project_todos = [t for p in area_projects for t in things.todos(project=p.get('uuid'))]
 
-    # Add the project todos to the work tasks.
+    # Add the project todos to the area tasks.
     area_tasks.extend(area_project_todos)
 
     return things.tasks(area=target_area.get('uuid'))
 
-todays_tasks = things.today()
 
-work_tasks = find_all_todos_by_area_title(DEFAULT_AREA_NAME)
-
-# Find the intersection of today's tasks and the work tasks.
-todays_work_tasks = [t for t in todays_tasks if t in work_tasks]
-
-if todays_work_tasks:
-    # Get the first task in the list.
-    next_task = todays_work_tasks[0]
-
-    # Get the title of the task, and if it is longer than N characters truncate it.
-    title = ''
-    if len(next_task['title']) > MAX_TITLE_LENGTH:
-        title = next_task['title'][:MAX_TITLE_LENGTH] + '...'
+def truncate_title(title, max_length):
+    """
+    Truncates the title to the specified length.
+    """
+    if len(title) > max_length:
+        return title[:max_length] + '...'
     else:
-        title = next_task['title']
+        return title
 
-    # Print the title of the task.
-    print(title)
-else:
-    print('☑️')
+
+def find_current_task():
+    """
+    Finds the current task in Things, scoped by area.
+    """
+    todays_tasks = things.today()
+
+    config = build_config()
+
+    scoped_tasks = find_all_todos_by_area_title(config.get('target_area_name'))
+
+    # Find the intersection of today's tasks and the area's tasks.
+    todays_scoped_tasks = [t for t in todays_tasks if t in scoped_tasks]
+
+    if todays_scoped_tasks:
+        next_task = todays_scoped_tasks[0]
+        title = truncate_title(next_task['title'], config.get('max_title_length'))
+        print(title)
+    else:
+        print(config.get('no_tasks_message'))
+
+find_current_task()
