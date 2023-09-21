@@ -93,7 +93,7 @@ def find_all_todos_by_area_title(title):
     # Add the project todos to the area tasks.
     area_tasks.extend(area_project_todos)
 
-    return things.tasks(area=target_area.get('uuid'))
+    return area_tasks
 
 
 def truncate_title(title, max_length):
