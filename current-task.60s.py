@@ -36,24 +36,14 @@ except ImportError:
 
 def find_user_config():
     """
-    Looks for a JSON configuration file.
-
-    By default looks in the current directory, then in the user's home directory.
+    Looks for a JSON configuration file in the user's home directory.
     """
-    repo_directory = os.path.dirname(os.path.abspath(__file__))
-    default_path = os.path.join(repo_directory, '.current-thing.json')
-    path_to_read = None
+    path_to_config_file = os.path.expanduser('~/.current-thing.json')
 
-    if os.path.exists(default_path):
-        path_to_read = default_path
-
-    if os.path.exists(os.path.expanduser('~/.current-thing.json')):
-        path_to_read = os.path.expanduser('~/.current-thing.json')
-
-    if not path_to_read:
+    if not os.path.exists(path_to_config_file):
         return {}
 
-    with open(path_to_read, 'r') as file:
+    with open(path_to_config_file, 'r') as file:
         return json.load(file)
 
 

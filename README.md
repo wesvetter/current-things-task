@@ -38,7 +38,7 @@ The task must be scheduled for Today and can be filtered to a specific area (by 
 
 ## Configuration
 
-The Xbar plugin can be customized by creating a `.current-thing.json` file in the repository root or in your home directory.
+The Xbar plugin can be customized by creating a `.current-thing.json` file in your home directory.
 
 Example:
 
