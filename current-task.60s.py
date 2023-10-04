@@ -23,6 +23,7 @@ import sys
 import json
 
 DEFAULT_AREA_NAME = 'Work'
+DEFAULT_HIDDEN_LABEL = 'Hidden'
 MAX_TITLE_LENGTH = 20
 NO_TASKS_MESSAGE = '☑️'
 
@@ -52,9 +53,10 @@ def build_config():
     Builds the configuration dictionary.
     """
     config = {
+        'hidden_label': DEFAULT_HIDDEN_LABEL,
         'max_title_length': MAX_TITLE_LENGTH,
         'no_tasks_message': NO_TASKS_MESSAGE,
-        'target_area_name': DEFAULT_AREA_NAME
+        'target_area_name': DEFAULT_AREA_NAME,
     }
 
     config.update(find_user_config())
@@ -112,6 +114,10 @@ def find_current_task():
 
     # Find the intersection of today's tasks and the area's tasks.
     todays_scoped_tasks = [t for t in todays_tasks if t in scoped_tasks]
+
+    # Filter out tasks with the hidden tag.
+    hidden_label = config.get('hidden_label')
+    todays_scoped_tasks = [t for t in todays_scoped_tasks if not t.get('tags') or not hidden_label in t.get('tags')]
 
     if todays_scoped_tasks:
         next_task = todays_scoped_tasks[0]

@@ -73,6 +73,11 @@ The maximum length of the title before truncation. If the title is longer than t
 
 Note that if the title is excessively long, such that it collides with other application's menus, then Xbar will not render plugin at all.
 
+### `hidden_label`
+
+**default:** `Hidden`
+
+This is a label that, if added to a task, will exclude it from appearing in status bar. This can be useful if the task is sensitive (e.g. "Fire Johnny" or "Search for new job").
 
 [gh-xbar]: https://github.com/matryer/xbar
 [things-www]: https://culturedcode.com/things/
