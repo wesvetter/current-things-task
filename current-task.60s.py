@@ -114,7 +114,11 @@ def find_current_task():
 
     config = build_config()
 
-    scoped_tasks = find_all_todos_by_area_title(config.get('target_area_name'))
+    # If no area is specified, then we'll just look at today's tasks.
+    if config.get('target_area_name') == None:
+        scoped_tasks = todays_tasks
+    else:
+        scoped_tasks = find_all_todos_by_area_title(config.get('target_area_name'))
 
     # Find the intersection of today's tasks and the area's tasks.
     todays_scoped_tasks = [t for t in todays_tasks if t in scoped_tasks]

@@ -57,6 +57,8 @@ The specified Area in Things to filter by. This is useful because you may not wa
 
 Tasks from projects under this area will also appear.
 
+To not filter by any area, set this value to `null`. The plugin will then show whatever task is next for the day.
+
 ### `no_tasks_message`
 
 **default:**  ☑️
