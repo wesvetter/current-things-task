@@ -1,6 +1,6 @@
 # About
 
-An [xbar][gh-xbar] plugin that shows the current work task in Things 3.
+A [SwiftBar][gh-swiftbar] plugin that shows the current work task in Things 3.
 
 ![Screenshot of the plugin](preview.png)
 
@@ -8,20 +8,29 @@ The task must be scheduled for Today and can be filtered to a specific area (by 
 
 ## Requirements
 
-*   [Xbar][gh-xbar]
+*   [SwiftBar][gh-swiftbar]
 *   [Things 3][things-www] (obviously)
 *   Python 3
 *   The `things.py` Python package
 
 ## Installation
 
-1.  Clone the repo:
+1.  Install SwiftBar (if you don't already have it):
+
+    ```
+    brew install --cask swiftbar
+    ```
+
+    On first launch, set the Plugin Folder to
+    `~/Library/Application Support/SwiftBar/Plugins` (or any folder you prefer).
+
+2.  Clone the repo:
 
     ```
     git clone git@github.com:wesvetter/current-things-task.git
     ```
 
-2.  Install the `things` Python package:
+3.  Install the `things` Python package:
 
     ```
     /usr/bin/pip3 install things.py
@@ -29,16 +38,17 @@ The task must be scheduled for Today and can be filtered to a specific area (by 
 
     (View the `.py` file for instructions on using Python via Homebrew)
 
-3.  Link the script to your Xbar plugin directory.
+4.  Link the script to your SwiftBar plugin directory.
 
     ```
     cd current-things-task
-    ln -s $PWD/current-task.60s.py $HOME/Library/Application\ Support/xbar/plugins/current-task.60s.py
+    mkdir -p "$HOME/Library/Application Support/SwiftBar/Plugins"
+    ln -s "$PWD/current-task.60s.py" "$HOME/Library/Application Support/SwiftBar/Plugins/current-task.60s.py"
     ```
 
 ## Configuration
 
-The Xbar plugin can be customized by creating a `.current-thing.json` file in your home directory.
+The plugin can be customized by creating a `.current-thing.json` file in your home directory.
 
 Example:
 
@@ -71,7 +81,7 @@ A message to display when no remaining tasks in the target area are left for tod
 
 The maximum length of the title before truncation. If the title is longer than this, it will be truncated and `...` will be appended. 
 
-Note that if the title is excessively long, such that it collides with other application's menus, then Xbar will not render plugin at all.
+Note that if the title is excessively long, such that it collides with other application's menus, then SwiftBar will not render the plugin at all.
 
 ### `hidden_label`
 
@@ -79,5 +89,5 @@ Note that if the title is excessively long, such that it collides with other app
 
 This is a label that, if added to a task, will exclude it from appearing in status bar. This can be useful if the task is sensitive (e.g. "Fire Johnny" or "Search for new job").
 
-[gh-xbar]: https://github.com/matryer/xbar
+[gh-swiftbar]: https://github.com/swiftbar/SwiftBar
 [things-www]: https://culturedcode.com/things/
