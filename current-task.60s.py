@@ -1,10 +1,6 @@
-#!/usr/bin/env python3
-# By default use the system Python 3 installation.
-
-# If Homebrew is installed, you can use the Homebrew Python 3 installation by
-# replacing the default shebang line above with the following line (check
-# `which python` and adjust the path as needed).
-#!/usr/bin/env /opt/homebrew/opt/python@3.11/libexec/bin/python
+#!/usr/bin/python3
+# Pin the system Python. SwiftBar runs plugins from a login shell, and
+# `#!/usr/bin/env python3` follows PATH to Nix's python3.
 
 #  <xbar.title>Current Things Task</xbar.title>
 #  <xbar.version>v0.1</xbar.version>
@@ -13,26 +9,61 @@
 #  <xbar.desc>Shows the current task in Things</xbar.desc>
 #  <xbar.dependencies>python3</xbar.dependencies>
 
-# The Python script may not work on legacy macOS versions (Big Sur or earlier),
-# because it may not find the correct path to the Python executable. If that
-# happens, use the shell script instead and specify the appropriate path to the
-# Python executable (use `which python3` to find the path).
-
-import os
-import sys
 import json
+import os
+import subprocess
 
 DEFAULT_AREA_NAME = 'Work'
 DEFAULT_HIDDEN_LABEL = 'Hidden'
 MAX_TITLE_LENGTH = 20
 NO_TASKS_MESSAGE = '☑️'
 
-try:
-    import things
-except ImportError:
-    # Error: The 'things' package is not installed. Please install it using the following command:
-    print("pip install things.py")
-    exit()
+# Record and unit separators keep titles that contain tabs or commas intact.
+ROW_SEPARATOR = '\x1e'
+FIELD_SEPARATOR = '\x1f'
+
+# Read Today through Things' scripting interface. SwiftBar cannot open the
+# Things SQLite database (macOS denies it), and `tell application` does not
+# launch Things when it is quit.
+TODAY_SCRIPT = r'''
+if application "Things3" is not running then
+  return "NOT_RUNNING"
+end if
+
+set us to ASCII character 31
+set rs to ASCII character 30
+
+tell application "Things3"
+  set rows to ""
+  repeat with td in to dos of list "Today"
+    if status of td is open then
+      set taskName to name of td
+      set areaName to ""
+      try
+        set areaName to name of area of td
+      end try
+      if areaName is missing value or areaName is "" then
+        try
+          set areaName to name of area of project of td
+        end try
+      end if
+      if areaName is missing value then set areaName to ""
+      set tagText to ""
+      try
+        set tagText to tag names of td
+      end try
+      if tagText is missing value then set tagText to ""
+      set row to taskName & us & areaName & us & tagText
+      if rows is "" then
+        set rows to row
+      else
+        set rows to rows & rs & row
+      end if
+    end if
+  end repeat
+  return rows
+end tell
+'''
 
 
 def find_user_config():
@@ -64,30 +95,6 @@ def build_config():
     return config
 
 
-def find_all_todos_by_area_title(title):
-    """
-    Finds all of the todos in the specified area, including those in projects.
-    """
-    try:
-        target_area = [a for a in things.areas() if a.get('title') == title][0]
-    except IndexError:
-       raise Exception('Area not found: ' + title)
-
-    # Get all tasks in the target area.
-    area_tasks = things.tasks(area=target_area.get('uuid'))
-
-    # Get all projects in the target area.
-    area_projects = things.projects(area=target_area.get('uuid'))
-
-    # Get all todos of projects in the target area.
-    area_project_todos = [t for p in area_projects for t in things.todos(project=p.get('uuid'))]
-
-    # Add the project todos to the area tasks.
-    area_tasks.extend(area_project_todos)
-
-    return area_tasks
-
-
 def truncate_title(title, max_length):
     """
     Truncates the title to the specified length.
@@ -98,32 +105,91 @@ def truncate_title(title, max_length):
         return title
 
 
+def parse_today_output(output):
+    """
+    Parse the AppleScript payload into task dicts.
+
+    `None` means Things is not running.
+    """
+    if output == 'NOT_RUNNING':
+        return None
+
+    if output == '':
+        return []
+
+    tasks = []
+    for row in output.split(ROW_SEPARATOR):
+        title, area, tags = (row.split(FIELD_SEPARATOR) + ['', ''])[:3]
+        tasks.append({
+            'title': title,
+            'area': area,
+            'tags': [tag.strip() for tag in tags.split(',') if tag.strip()],
+        })
+    return tasks
+
+
+def select_current_task(tasks, config):
+    """
+    First Today task in the target area, skipping the hidden label.
+    """
+    area_name = config.get('target_area_name')
+    if area_name is None:
+        scoped = list(tasks)
+    else:
+        scoped = [task for task in tasks if task.get('area') == area_name]
+
+    hidden_label = config.get('hidden_label')
+    if hidden_label:
+        scoped = [task for task in scoped if hidden_label not in task.get('tags', [])]
+
+    if not scoped:
+        return None
+    return scoped[0]
+
+
+def fetch_today_tasks():
+    """
+    Today's open to-dos, in Things' Today order.
+    """
+    completed = subprocess.run(
+        ['/usr/bin/osascript', '-e', TODAY_SCRIPT],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    if completed.returncode != 0:
+        message = completed.stderr.strip() or 'osascript failed'
+        raise RuntimeError(message)
+
+    output = completed.stdout
+    if output.endswith('\n'):
+        output = output[:-1]
+    return parse_today_output(output)
+
+
 def find_current_task():
     """
     Finds the current task in Things, scoped by area.
     """
-    todays_tasks = things.today()
-
     config = build_config()
 
-    # If no area is specified, then we'll just look at today's tasks.
-    if config.get('target_area_name') == None:
-        scoped_tasks = todays_tasks
-    else:
-        scoped_tasks = find_all_todos_by_area_title(config.get('target_area_name'))
+    try:
+        tasks = fetch_today_tasks()
+    except (OSError, subprocess.TimeoutExpired, RuntimeError):
+        print('Things unavailable')
+        return
 
-    # Find the intersection of today's tasks and the area's tasks.
-    todays_scoped_tasks = [t for t in todays_tasks if t in scoped_tasks]
+    if tasks is None:
+        print('Open Things')
+        return
 
-    # Filter out tasks with the hidden tag.
-    hidden_label = config.get('hidden_label')
-    todays_scoped_tasks = [t for t in todays_scoped_tasks if not t.get('tags') or not hidden_label in t.get('tags')]
-
-    if todays_scoped_tasks:
-        next_task = todays_scoped_tasks[0]
-        title = truncate_title(next_task['title'], config.get('max_title_length'))
-        print(title)
+    current = select_current_task(tasks, config)
+    if current:
+        print(truncate_title(current['title'], config.get('max_title_length')))
     else:
         print(config.get('no_tasks_message'))
 
-find_current_task()
+
+if __name__ == '__main__':
+    find_current_task()
