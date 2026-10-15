@@ -8,10 +8,11 @@ The task must be scheduled for Today and can be filtered to a specific area (by 
 
 ## Requirements
 
-*   [Xbar][gh-xbar]
+*   [Xbar][gh-xbar] or [SwiftBar](https://github.com/swiftbar/SwiftBar)
 *   [Things 3][things-www] (obviously)
 *   Python 3
-*   The `things.py` Python package
+
+The plugin reads Today from Things through AppleScript.
 
 ## Installation
 
@@ -21,19 +22,18 @@ The task must be scheduled for Today and can be filtered to a specific area (by 
     git clone git@github.com:wesvetter/current-things-task.git
     ```
 
-2.  Install the `things` Python package:
+2.  Link the script into the plugin directory.
+
+    SwiftBar:
 
     ```
-    /usr/bin/pip3 install things.py
+    ln -s $PWD/current-task.60s.py "$HOME/Library/Application Support/SwiftBar/Plugins/current-task.60s.py"
     ```
 
-    (View the `.py` file for instructions on using Python via Homebrew)
-
-3.  Link the script to your Xbar plugin directory.
+    xbar:
 
     ```
-    cd current-things-task
-    ln -s $PWD/current-task.60s.py $HOME/Library/Application\ Support/xbar/plugins/current-task.60s.py
+    ln -s $PWD/current-task.60s.py "$HOME/Library/Application Support/xbar/plugins/current-task.60s.py"
     ```
 
 ## Configuration
